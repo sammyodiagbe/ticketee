@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+---
+
+# Your rule content
+
+- You can @ files here
+- You can use markdown but dont have to
+
+
+# Stack
+- Tailwind
+- Nextjs
+- Shadcnui
+
+
+# Note
+- use npx shadcn@latest add * when adding components
+- Follow good coding techniques and do not repeat yourself (DRY)
+- 
