@@ -1,21 +1,12 @@
-import Sidebar from "@/components/Sidebar";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { getEvents } from "@/lib/events";
 
-export default function EventsPage() {
+export default async function EventsPage() {
   const currentMonth = "March 2024";
   const days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
-  // Dummy events data
-  const events = [
-    {
-      id: 1,
-      name: "Little Tigers Karate",
-      time: "3:00 PM - 4:00 PM",
-      type: "Weekly",
-      members: "25 out of 30",
-    },
-  ];
+  // Fetch real events from Supabase
+  const events = await getEvents();
 
   return (
     <>
@@ -23,21 +14,22 @@ export default function EventsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <nav className="flex items-center text-muted-foreground text-sm">
-              <a href="/events" className="hover:text-foreground">
+              <Link href="/events" className="hover:text-foreground">
                 Events
-              </a>
-              <span className="mx-2">/</span>
-              <span>Little Tigers Karate</span>
+              </Link>
             </nav>
           </div>
 
           <div className="bg-card text-card-foreground shadow rounded-lg border">
             <div className="px-6 py-4 border-b">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-medium">Little Tigers Karate</h2>
-                <button className="text-sm text-primary hover:text-primary/90 font-medium">
-                  Edit Master Event
-                </button>
+                <h2 className="text-lg font-medium">Events Calendar</h2>
+                <Link
+                  href="/events/create"
+                  className="text-sm text-primary hover:text-primary/90 font-medium"
+                >
+                  Create Event
+                </Link>
               </div>
             </div>
 
@@ -94,28 +86,47 @@ export default function EventsPage() {
                 ))}
 
                 {/* Calendar grid */}
-                {Array.from({ length: 35 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="bg-card min-h-[120px] p-2 relative"
-                  >
-                    <span className="text-sm text-muted-foreground">
-                      {index + 1}
-                    </span>
-                    {/* Event indicator */}
-                    {index === 7 && (
-                      <div className="mt-1">
-                        <Link
-                          href="/events/little-tigers"
-                          className="block bg-primary/10 text-primary text-xs rounded p-1 hover:bg-primary/20 transition-colors"
-                        >
-                          Little Tigers Karate
-                          <div className="text-muted-foreground">3:00 PM</div>
-                        </Link>
+                {Array.from({ length: 35 }).map((_, index) => {
+                  const dayEvents = events.filter((event) => {
+                    const eventDate = new Date(event.start_date);
+                    return (
+                      eventDate.getDate() === index + 1 &&
+                      eventDate.getMonth() === 2
+                    ); // March is 2 (0-based)
+                  });
+
+                  return (
+                    <div
+                      key={index}
+                      className="bg-card min-h-[120px] p-2 relative"
+                    >
+                      <span className="text-sm text-muted-foreground">
+                        {index + 1}
+                      </span>
+                      {/* Event indicators */}
+                      <div className="mt-1 space-y-1">
+                        {dayEvents.map((event) => (
+                          <Link
+                            key={event.id}
+                            href={`/events/${event.id}`}
+                            className="block bg-primary/10 text-primary text-xs rounded p-1 hover:bg-primary/20 transition-colors"
+                          >
+                            {event.title}
+                            <div className="text-muted-foreground">
+                              {new Date(event.start_date).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </div>
+                          </Link>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

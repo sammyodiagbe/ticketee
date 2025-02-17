@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { createBrowserClient } from "@supabase/ssr";
+import AddressAutocomplete from "@/components/address-autocomplete";
 
 const steps = [
   { id: "personal", name: "Personal Info" },
@@ -359,13 +360,16 @@ export default function OnboardingPage() {
                         >
                           Business Address
                         </label>
-                        <input
-                          type="text"
-                          id="businessAddress"
-                          name="businessAddress"
+                        <AddressAutocomplete
                           value={formData.businessAddress}
-                          onChange={handleInputChange}
+                          onChange={(value) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              businessAddress: value,
+                            }))
+                          }
                           className="w-full rounded-md border bg-background px-3 py-2"
+                          placeholder="Enter your business address"
                           required
                         />
                       </div>
