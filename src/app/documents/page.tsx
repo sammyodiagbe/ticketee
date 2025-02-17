@@ -3,7 +3,6 @@ import Sidebar from "@/components/Sidebar";
 export default function DocumentsPage() {
   return (
     <>
-      <Sidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">

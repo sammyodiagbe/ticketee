@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function EventsPage() {
   const currentMonth = "March 2024";
@@ -18,7 +19,6 @@ export default function EventsPage() {
 
   return (
     <>
-      <Sidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
@@ -105,10 +105,13 @@ export default function EventsPage() {
                     {/* Event indicator */}
                     {index === 7 && (
                       <div className="mt-1">
-                        <div className="bg-primary/10 text-primary text-xs rounded p-1">
+                        <Link
+                          href="/events/little-tigers"
+                          className="block bg-primary/10 text-primary text-xs rounded p-1 hover:bg-primary/20 transition-colors"
+                        >
                           Little Tigers Karate
                           <div className="text-muted-foreground">3:00 PM</div>
-                        </div>
+                        </Link>
                       </div>
                     )}
                   </div>

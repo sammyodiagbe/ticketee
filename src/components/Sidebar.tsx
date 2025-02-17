@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   HomeIcon,
   CalendarIcon,
@@ -10,9 +10,13 @@ import {
   CreditCardIcon,
   UserGroupIcon,
   ChatBubbleLeftIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/auth-context";
+import { useEffect, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
 
 const navigation = [
   { name: "Home", href: "/", icon: HomeIcon },
@@ -30,9 +34,50 @@ const secondaryNavigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { signOut } = useAuth();
+  const [profile, setProfile] = useState<any>(null);
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+          if (profile) {
+            setProfile(profile);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [supabase]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push("/auth/sign-in");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   return (
-    <div className="fixed inset-y-0 left-0 w-64 bg-card border-r">
+    <div className="h-full bg-card border-r">
       <div className="flex flex-col h-full">
         <div className="flex items-center h-16 px-4 border-b">
           <div className="flex items-center space-x-2">
@@ -112,15 +157,30 @@ export default function Sidebar() {
           </div>
         </nav>
 
-        <div className="flex items-center p-4 border-t">
-          <img
-            src="https://ui-avatars.com/api/?name=John+Doe"
-            alt="Profile"
-            className="w-8 h-8 rounded-full ring-1 ring-border"
-          />
-          <div className="ml-3">
-            <p className="text-sm font-medium">John Doe</p>
-            <p className="text-xs text-muted-foreground">john@example.com</p>
+        <div className="border-t">
+          <div className="flex items-center p-4">
+            <img
+              src={`https://ui-avatars.com/api/?name=${profile?.first_name}+${profile?.last_name}`}
+              alt="Profile"
+              className="w-8 h-8 rounded-full ring-1 ring-border"
+            />
+            <div className="ml-3 flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {profile
+                  ? `${profile.first_name} ${profile.last_name}`
+                  : "Loading..."}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {profile?.business_name || "Loading..."}
+              </p>
+            </div>
+            <button
+              onClick={handleSignOut}
+              className="ml-2 p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
+              title="Sign out"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </div>

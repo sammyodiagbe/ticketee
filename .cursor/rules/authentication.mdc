@@ -1,0 +1,8 @@
+---
+description: Authentication instruction for cursor ai
+globs: 
+---
+
+# Instruction
+- We would be using supabase to handle authentication for this platform
+- Use good coding techniques
