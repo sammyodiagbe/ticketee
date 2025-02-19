@@ -2,20 +2,35 @@
 
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const [theme, setTheme] = React.useState<"light" | "dark">("light");
+
+  React.useEffect(() => {
+    // Get initial theme from localStorage or system preference
+    const savedTheme = localStorage.getItem("theme") || "light";
+    setTheme(savedTheme as "light" | "dark");
+    document.documentElement.setAttribute("data-theme", savedTheme);
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+  };
 
   return (
     <button
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-      className="rounded-md p-2 hover:bg-accent relative"
+      onClick={toggleTheme}
+      className="btn btn-circle btn-ghost swap swap-rotate"
     >
-      <div className="relative w-5 h-5">
-        <Sun className="absolute inset-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute inset-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      </div>
+      {/* Sun icon */}
+      <Sun className={`w-5 h-5 ${theme === "dark" ? "swap-on" : "swap-off"}`} />
+      {/* Moon icon */}
+      <Moon
+        className={`w-5 h-5 ${theme === "light" ? "swap-on" : "swap-off"}`}
+      />
       <span className="sr-only">Toggle theme</span>
     </button>
   );

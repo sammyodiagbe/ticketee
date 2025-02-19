@@ -25,18 +25,66 @@ export async function uploadEventImage(file: File) {
 }
 
 export async function createEvent(eventData: CreateEventDTO) {
+  // First check if we have an active session
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError) {
+    console.error('Session error:', sessionError);
+    throw new Error('Failed to check authentication status');
+  }
+
+  if (!session) {
+    throw new Error('Please sign in to create an event');
+  }
+
+  // Validate required fields
+  const requiredFields = {
+    title: "Event title",
+    start_date: "Start date",
+  };
+
+  const missingFields = Object.entries(requiredFields)
+    .filter(([field]) => !eventData[field as keyof CreateEventDTO])
+    .map(([, label]) => label);
+
+  if (missingFields.length > 0) {
+    throw new Error(
+      `Please fill in all required fields: ${missingFields.join(", ")}`
+    );
+  }
+
+  // Get the current user from the session
+  const user = session.user;
+  if (!user) {
+    throw new Error('User session is invalid. Please sign in again.');
+  }
+
+  // Ensure the data is properly formatted
+  const formattedData = {
+    ...eventData,
+    created_by: user.id,
+    media_urls: eventData.media_urls || [],
+    is_published: eventData.is_published ?? true,
+  };
+
   const { data, error } = await supabase
     .from("events")
-    .insert([
-      {
-        ...eventData,
-        created_by: (await supabase.auth.getUser()).data.user?.id,
-      },
-    ])
+    .insert([formattedData])
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Event creation error:', error);
+    if (error.message.includes('violates row-level security policy')) {
+      throw new Error('You do not have permission to create events');
+    }
+    // Handle specific database constraints
+    if (error.message.includes('null value in column')) {
+      throw new Error('Please fill in all required fields');
+    }
+    throw error;
+  }
+  
   return data as Event;
 }
 

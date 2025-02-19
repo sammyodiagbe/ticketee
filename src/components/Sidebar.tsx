@@ -11,8 +11,8 @@ import {
   UserGroupIcon,
   ChatBubbleLeftIcon,
   ArrowRightOnRectangleIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
-import { ThemeToggle } from "./theme-toggle";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { useEffect, useState } from "react";
@@ -30,13 +30,22 @@ const secondaryNavigation = [
   { name: "Payments", href: "/payments", icon: CreditCardIcon },
   { name: "People", href: "/people", icon: UserGroupIcon },
   { name: "Communication", href: "/communication", icon: ChatBubbleLeftIcon },
+  { name: "Settings", href: "/settings", icon: Cog6ToothIcon },
 ];
+
+interface Profile {
+  id: string;
+  first_name: string;
+  last_name: string;
+  business_name?: string;
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -49,6 +58,7 @@ export default function Sidebar() {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
+          setUserEmail(user.email ?? null);
           const { data: profile } = await supabase
             .from("profiles")
             .select("*")
@@ -77,15 +87,12 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="h-full bg-card border-r">
+    <div className="h-full bg-base-200 border-r border-base-300">
       <div className="flex flex-col h-full">
-        <div className="flex items-center h-16 px-4 border-b">
+        <div className="flex items-center h-16 px-4 border-b border-base-300">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-lg"></div>
             <span className="text-xl font-semibold">KarateStudio</span>
-          </div>
-          <div className="ml-auto">
-            <ThemeToggle />
           </div>
         </div>
 
@@ -158,29 +165,33 @@ export default function Sidebar() {
         </nav>
 
         <div className="border-t">
-          <div className="flex items-center p-4">
-            <img
-              src={`https://ui-avatars.com/api/?name=${profile?.first_name}+${profile?.last_name}`}
-              alt="Profile"
-              className="w-8 h-8 rounded-full ring-1 ring-border"
-            />
-            <div className="ml-3 flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">
-                {profile
-                  ? `${profile.first_name} ${profile.last_name}`
-                  : "Loading..."}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {profile?.business_name || "Loading..."}
-              </p>
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center flex-1">
+                <img
+                  src={`https://ui-avatars.com/api/?name=${profile?.first_name}+${profile?.last_name}`}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full ring-1 ring-border"
+                />
+                <div className="ml-3 flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {profile
+                      ? `${profile.first_name} ${profile.last_name}`
+                      : "Loading..."}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {userEmail || "Loading..."}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleSignOut}
+                className="p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
+                title="Sign out"
+              >
+                <ArrowRightOnRectangleIcon className="w-5 h-5" />
+              </button>
             </div>
-            <button
-              onClick={handleSignOut}
-              className="ml-2 p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent"
-              title="Sign out"
-            >
-              <ArrowRightOnRectangleIcon className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </div>

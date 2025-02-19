@@ -17,7 +17,7 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-inter)"],
+        grotesk: ["var(--font-grotesk)", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -77,4 +77,6 @@ const config: Config = {
   },
   plugins: [],
 };
+
 export default config;
+
